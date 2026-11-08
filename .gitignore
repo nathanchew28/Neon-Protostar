@@ -1,0 +1,13 @@
+# Android build output
+android/
+neon-protostar-apk/
+
+# Node dependencies
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Capacitor
+capacitor.config.json

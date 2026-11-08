@@ -1,0 +1,472 @@
+:root {
+    --bg-color: #050505;
+    --primary-neon: #00f3ff;
+    --secondary-neon: #ff0055;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --font-main: 'Outfit', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body,
+html {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    color: white;
+    font-family: var(--font-main);
+    overflow: hidden;
+}
+
+#app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+canvas#visualizer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Feature Selection Interface */
+#feature-selection {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 150;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    padding: 40px;
+    background: radial-gradient(circle at center, rgba(0,0,0,0.85), #000);
+}
+
+#feature-selection.hidden {
+    display: none;
+}
+
+.feature-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 25px;
+    width: 250px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--primary-neon);
+    box-shadow: 0 15px 35px rgba(0, 243, 255, 0.2);
+}
+
+.feature-icon {
+    margin-bottom: 15px;
+}
+
+.feature-icon svg {
+    width: 60px;
+    height: 60px;
+    fill: var(--primary-neon);
+    filter: drop-shadow(0 0 10px var(--primary-neon));
+}
+
+.feature-card h3 {
+    color: var(--primary-neon);
+    margin: 15px 0 10px 0;
+    font-size: 1.2rem;
+    text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+}
+
+.feature-card p {
+    color: #aaa;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+.feature-btn {
+    background: transparent;
+    color: var(--primary-neon);
+    border: 1px solid var(--primary-neon);
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+    width: 100%;
+}
+
+.feature-btn:hover {
+    background: var(--primary-neon);
+    color: black;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+}
+
+/* Overlays */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.8), #000);
+    transition: opacity 0.5s ease;
+}
+
+.overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.content {
+    text-align: center;
+}
+
+h1 {
+    font-size: 3rem;
+    letter-spacing: 4px;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(to right, #fff, var(--primary-neon));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+}
+
+p {
+    color: #888;
+    margin-bottom: 2rem;
+    letter-spacing: 2px;
+}
+
+/* Buttons */
+.neon-btn {
+    background: transparent;
+    color: var(--primary-neon);
+    border: 1px solid var(--primary-neon);
+    padding: 1rem 2rem;
+    font-family: inherit;
+    font-weight: 600;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+}
+
+.neon-btn:hover {
+    background: var(--primary-neon);
+    color: black;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+}
+
+/* Interface */
+#interface {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none;
+    /* Let clicks pass through to canvas if needed, but child elements will re-enable */
+}
+
+#interface.hidden {
+    display: none;
+}
+
+.header {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--primary-neon);
+    text-shadow: 0 0 5px var(--primary-neon);
+}
+
+.status-indicator::before {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    background-color: var(--primary-neon);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--primary-neon);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    100% {
+        opacity: 0.5;
+    }
+}
+
+.dock {
+    position: absolute;
+    bottom: 2rem;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.dock-btn {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s;
+}
+
+.dock-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: var(--primary-neon);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* Modal */
+.modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    transition: opacity 0.3s;
+    pointer-events: auto;
+}
+
+.modal.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.glass-panel {
+    width: 90%;
+    max-width: 400px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    transform: translateY(0);
+    transition: transform 0.3s;
+}
+
+.modal.hidden .glass-panel {
+    transform: translateY(20px);
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.close-btn:hover {
+    opacity: 1;
+}
+
+.album-art-placeholder {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, #333, #111, #333);
+    position: relative;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    animation: spin 10s linear infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.disc {
+    width: 40px;
+    height: 40px;
+    background: #050505;
+    border-radius: 50%;
+    border: 2px solid #222;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+h3 {
+    font-size: 1rem;
+    color: var(--primary-neon);
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+}
+
+.meta-info {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.label {
+    color: #888;
+    margin-right: 0.5rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+#focus-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+    color: white;
+    text-shadow: 0 0 10px white;
+    pointer-events: none;
+}
+
+#focus-message.hidden {
+    display: none;
+}
+
+/* Result Modal Enhancements */
+.song-info {
+    margin-bottom: 20px;
+}
+
+.musical-details {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px 0;
+    border: 1px solid rgba(0, 243, 255, 0.2);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.detail-label {
+    font-size: 0.8rem;
+    color: var(--primary-neon);
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+.detail-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 0 5px var(--primary-neon);
+}
+
+.song-description {
+    font-size: 0.9rem;
+    color: #ccc;
+    font-style: italic;
+    line-height: 1.4;
+    margin-top: 15px;
+    padding: 0 10px;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.action-btn {
+    background: transparent;
+    border: 1px solid var(--accent-neon);
+    color: var(--accent-neon);
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.action-btn:hover {
+    background: var(--accent-neon);
+    color: #000;
+    box-shadow: 0 0 15px var(--accent-neon);
+}

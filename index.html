@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Neon Protostar - Immersive Audio Visualizer with Music Player">
+    <title>Neon Protostar | Audio Visualizer</title>
+    
+    <!-- Performance optimizations -->
+    <link rel="preload" href="style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="prefetch" href="app.js">
+    <noscript><link rel="stylesheet" href="style.css"></noscript>
+    
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="dns-prefetch" href="https://api.audd.io">
+    
+    <!-- Optimized font loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    
+    <!-- Critical CSS inlined for fastest rendering -->
+    <style>
+        :root {
+            --bg-color: #050505;
+            --primary-neon: #00f3ff;
+            --secondary-neon: #ff0055;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --font-main: 'Outfit', sans-serif;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: white;
+            font-family: var(--font-main);
+            overflow: hidden;
+            /* Optimize rendering */
+            will-change: transform;
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- Visualizer Canvas -->
+        <canvas id="visualizer"></canvas>
+
+        <!-- Start Overlay (User Interaction Requirement) -->
+        <div id="start-overlay" class="overlay active">
+            <div class="content">
+                <h1>NEON PROTOSTAR</h1>
+                <p>Immersive Audio Experience</p>
+                <button id="start-btn" class="neon-btn">INITIALIZE SYSTEM</button>
+            </div>
+        </div>
+        
+        <div id="feature-selection" class="hidden">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" width="48" height="48">
+                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+            </div>
+            <h3>Tuner</h3>
+            <p>Tune your instruments accurately</p>
+            <button class="feature-btn" id="tuner-btn">Start Tuner</button>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" width="48" height="48">
+                    <path fill="currentColor" d="M12 3v9.28a4.39 4.39 0 0 0-1.5-.28 4.5 4.5 0 1 0 4.5 4.5V6h3V3h-6z" />
+                </svg>
+            </div>
+            <h3>Song Identification</h3>
+            <p>Identify songs playing around you</p>
+            <button class="feature-btn" id="identify-feature-btn">Find Song</button>
+        </div>
+    </div>
+
+        <!-- Main Interface (Hidden initially) -->
+        <div id="interface" class="hidden">
+            <div class="header">
+                <span class="status-indicator">MIC ACTIVE</span>
+            </div>
+
+            <div class="center-focus">
+                <!-- Dynamic status text or icon -->
+                <div id="focus-message" class="hidden">LISTENING...</div>
+            </div>
+
+            <div class="dock">
+                <button id="identify-btn" class="dock-btn">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path fill="currentColor"
+                            d="M12 3v9.28a4.39 4.39 0 0 0-1.5-.28 4.5 4.5 0 1 0 4.5 4.5V6h3V3h-6z" />
+                    </svg>
+                    <span>Identify Song</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tuner Interface (Hidden initially) -->
+        <div id="tuner-interface" class="hidden">
+            <div class="tuner-container glass-panel">
+                <h2 class="neon-text">Music Instrument Tuner</h2>
+                <div class="tuner-display">
+                    <div id="note-display" class="note-display">--</div>
+                    <div id="frequency-display" class="frequency-display">0 Hz</div>
+                    <div id="cents-display" class="cents-display">0 cents</div>
+                </div>
+                <div class="tuner-gauge">
+                    <div id="needle" class="needle"></div>
+                    <div class="gauge-markers">
+                        <span class="marker left">-50</span>
+                        <span class="marker center">0</span>
+                        <span class="marker right">+50</span>
+                    </div>
+                </div>
+                <div class="tuner-instructions">
+                    <p>Play your instrument near the microphone to tune</p>
+                    <div class="current-note">
+                        <span id="current-note">Note:</span>
+                        <span id="note-name">--</span>
+                    </div>
+                </div>
+                <button id="close-tuner" class="neon-btn">Close Tuner</button>
+            </div>
+        </div>
+
+        <!-- AudD Token Modal -->
+        <div id="token-modal" class="modal hidden">
+            <div class="modal-content glass-panel">
+                <h2 class="neon-text">🎵 Song Identification</h2>
+                <p style="color:#aaa; margin-bottom:1rem; font-size:0.9rem; letter-spacing:1px;">To identify songs, enter your free AudD.io API token below. Get one free at <strong style="color:var(--primary-neon)">audd.io</strong></p>
+                <input id="audd-token-input" type="text" placeholder="Paste your AudD token here..."
+                    style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid var(--primary-neon);
+                    background:rgba(0,243,255,0.07); color:white; font-family:inherit; font-size:0.95rem;
+                    outline:none; margin-bottom:1.2rem; box-shadow:0 0 10px rgba(0,243,255,0.15);" />
+                <p style="color:#666; font-size:0.75rem; margin-bottom:1.2rem; letter-spacing:0.5px;">Leave blank to use the limited "test" token</p>
+                <div style="display:flex; gap:12px; justify-content:center;">
+                    <button id="token-cancel-btn" class="neon-btn" style="flex:1">Cancel</button>
+                    <button id="token-confirm-btn" class="neon-btn" style="flex:1; background:var(--primary-neon); color:#000;">Listen 🎧</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Modal (Hidden) -->
+
+        <div id="result-modal" class="modal hidden">
+            <div class="modal-content glass-panel" id="result-content">
+                <button id="close-modal" class="close-btn">&times;</button>
+                <h2 class="neon-text glow">Song Identified</h2>
+                <div class="song-info">
+                    <h3 id="song-title">Title</h3>
+                    <p id="artist-name">Artist</p>
+                    <p class="release-date">Released: <span id="release-date">Date</span></p>
+
+                    <div class="musical-details" id="musical-details">
+                        <div class="detail-item">
+                            <span class="detail-label">KEY</span>
+                            <span class="detail-value" id="song-key">--</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">CHORDS</span>
+                            <span class="detail-value" id="song-chords">--</span>
+                        </div>
+                    </div>
+
+                    <p id="song-description" class="song-description">...</p>
+                </div>
+
+                <div class="modal-actions">
+                    <button id="sheet-music-btn" class="action-btn neon-border">Find Sheet Music 🎼</button>
+                    <button id="close-modal-btn" class="neon-btn">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <script src="app.js"></script>
+</body>
+
+</html>
